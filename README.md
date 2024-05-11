@@ -1,6 +1,6 @@
-# QRIDE_backend
+# Soa omg
 
-Backend to Qride Application
+Backend to soa Application
 
 <pre>
 ㅤ  ∧＿∧
