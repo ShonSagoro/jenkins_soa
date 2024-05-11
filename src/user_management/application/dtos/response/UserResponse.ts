@@ -1,11 +1,11 @@
-import { User } from "../../domain/entities/User";
+import { User } from "../../../domain/entities/User";
 
 export class UserResponse {
-    uuid: string;
-    name: string;
-    email: string;
-    lastname: string;
-    phoneNumber: string;
+    public uuid: string;
+    public name: string;
+    public email: string;
+    public lastname: string;
+    public phoneNumber: string;
 
     constructor(user: User) {
         this.uuid = user.uuid;

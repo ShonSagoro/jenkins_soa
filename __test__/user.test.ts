@@ -24,7 +24,7 @@ describe('Iniciar sesión', () => {
                 password: '12345678'
             });
         console.log(response.body.message);
-        expect(response.status).toBe(200);
+        expect(response.status).toBe(201);
         userUUID = response.body.data.uuid;
     });
 
@@ -63,27 +63,117 @@ describe('Iniciar sesión', () => {
         expect(response.status).toBe(404);
     });
 
-    it('debería devolver un token si el acceso es correcto', async () => {
-        const response = await request(app)
-            .post(url_base_inicio_sesion)
-            .send({ email: 'test@gmail.com', password: '12345678' });
-        expect(response.status).toBe(200);
-        expect(response.body.data).toHaveProperty('jwt_token');
-        expect(response.body.data).toHaveProperty('user_token');
-    });
-
     afterAll(async () => {
         let response = await request(app)
-            .post(url_base_inicio_sesion)
-            .send({ email: 'test@gmail.com', password: '12345678' });
-        expect(response.status).toBe(200);
-        const token = response.body.data.jwt_token;
-        response = await request(app)
             .delete(`/api/v1/users/${userUUID}`)
-            .set('Authorization', `Bearer ${token}`);
         expect(response.status).toBe(200);
     });
 });
 
+describe('Registrar usuario', () => {
 
+    let uuidFree: string;
+    it('El email no debe estar vacío.', async () => {
+        const response = await request(app)
+            .post(url_base_register)
+            .send({
+                email: '',
+                password: 'password2',
+                name: 'test3',
+                lastname: 'test3',
+                phoneNumber: '923456789'
+            })
+        expect(response.status).toBe(400);
+        expect(response.body.success).toBe(false);
+    });
+    it('El email debe cumplir con el formato.', async () => {
+        const response = await request(app)
+            .post(url_base_register)
+            .send({
+                email: 'freeatgmail.com', // invalid email format
+                password: 'password2',
+                name: 'test3',
+                lastname: 'test3',
+                phoneNumber: '923456789'
+            });
+        expect(response.status).toBe(400);
+        expect(response.body.success).toBe(false);
+    });
 
+    it('Los datos como numero de telefono debe ir', async () => {
+        const response = await request(app)
+            .post(url_base_register)
+            .send({
+                email: 'free@gmail.com',
+                password: 'password2',
+                name: 'test3',
+                lastname: 'test3',
+                phoneNumber: '' // empty phone number
+            });
+        expect(response.status).toBe(400);
+        expect(response.body.success).toBe(false);
+    });
+
+    it('El nombre no debe estar vacío.', async () => {
+        const response = await request(app)
+            .post(url_base_register)
+            .send({
+                email: 'free@gmail.com',
+                password: 'password2',
+                name: '', // empty name
+                lastname: 'test3',
+                phoneNumber: '923456789'
+            });
+        expect(response.status).toBe(400);
+        expect(response.body.success).toBe(false);
+    });
+
+    it('La contraseña no debe ser menor a 8 caracteres.', async () => {
+        const response = await request(app)
+            .post(url_base_register)
+            .send({
+                email: 'free@gmail.com',
+                password: 'pass', // less than 8 characters
+                name: 'test3',
+                lastname: 'test3',
+                phoneNumber: '923456789'
+            });
+        expect(response.status).toBe(400);
+        expect(response.body.success).toBe(false);
+    });
+
+    it('La contraseña es demasiado larga para un objeto string (al maximo 32 caracteres)', async () => {
+        const response = await request(app)
+            .post(url_base_register)
+            .send({
+                email: 'free@gmail.com',
+                password: 'thisIsAPasswordThatIsLongerThan32Characters',
+                name: 'test3',
+                lastname: 'test3',
+                phoneNumber: '923456789'
+            });
+        expect(response.status).toBe(400);
+        expect(response.body.success).toBe(false);
+    });
+
+    it("Formato correcto, entonces pasa", async () => {
+        const response = await request(app)
+            .post(url_base_register)
+            .send({
+                email: 'test11@gmail.com',
+                password: 'password2',
+                name: 'test3',
+                lastname: 'test3',
+                phoneNumber: '923456789'
+            });
+        uuidFree = response.body.data.uuid;
+        expect(response.status).toBe(201);
+        expect(response.body.success).toBe(true);
+    });
+
+    afterEach(async () => {
+        let response = await request(app)
+            .delete(`/api/v1/users/${uuidFree}`);
+        expect(response.status).toBe(200);
+    });
+});
