@@ -24,7 +24,3 @@ let server = app.listen(PORT, HOST, () => {
 
 
 export { app, server };
-
-function cors(): any {
-    throw new Error('Function not implemented.');
-}
